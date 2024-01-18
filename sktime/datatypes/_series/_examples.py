@@ -77,10 +77,15 @@ if _check_soft_dependencies("dask", severity="none"):
 if _check_soft_dependencies("modin", severity="none"):
     import modin.pandas as md
 
+    series_modin = md.Series(example_dict[("pd.Series", "Series", 0)])
+
+    example_dict[("modin_series", "Series", 0)] = series_modin
+    example_dict_lossy[("modin_series", "Series", 0)] = False
+
     df_modin = md.DataFrame(example_dict[("pd.DataFrame", "Series", 0)])
 
-    example_dict[("modin_series", "Series", 0)] = df_modin
-    example_dict_lossy[("modin_series", "Series", 0)] = False
+    example_dict[("modin_dataframe", "Series", 0)] = df_modin
+    example_dict_lossy[("modin_dataframe", "Series", 0)] = False
 
 example_dict_metadata[("Series", 0)] = {
     "is_univariate": True,
@@ -128,10 +133,15 @@ if _check_soft_dependencies("dask", severity="none"):
 if _check_soft_dependencies("modin", severity="none"):
     import modin.pandas as md
 
+    series_modin = md.Series(example_dict[("pd.Series", "Series", 1)])
+
+    example_dict[("modin_series", "Series", 1)] = series_modin
+    example_dict_lossy[("modin_series", "Series", 1)] = False
+
     df_modin = md.DataFrame(example_dict[("pd.DataFrame", "Series", 1)])
 
-    example_dict[("modin_series", "Series", 1)] = df_modin
-    example_dict_lossy[("modin_series", "Series", 1)] = False
+    example_dict[("modin_dataframe", "Series", 1)] = df_modin
+    example_dict_lossy[("modin_dataframe", "Series", 1)] = False
 
 example_dict_metadata[("Series", 1)] = {
     "is_univariate": False,
@@ -181,10 +191,15 @@ if _check_soft_dependencies("dask", severity="none"):
 if _check_soft_dependencies("modin", severity="none"):
     import modin.pandas as md
 
+    series_modin = md.Series(example_dict[("pd.Series", "Series", 2)])
+
+    example_dict[("modin_series", "Series", 2)] = series_modin
+    example_dict_lossy[("modin_series", "Series", 2)] = False
+
     df_modin = md.DataFrame(example_dict[("pd.DataFrame", "Series", 2)])
 
-    example_dict[("modin_series", "Series", 2)] = df_modin
-    example_dict_lossy[("modin_series", "Series", 2)] = False
+    example_dict[("modin_dataframe", "Series", 2)] = df_modin
+    example_dict_lossy[("modin_dataframe", "Series", 2)] = False
 
 example_dict_metadata[("Series", 2)] = {
     "is_univariate": False,

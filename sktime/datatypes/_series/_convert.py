@@ -313,6 +313,18 @@ if _check_soft_dependencies("modin", severity="none"):
     ] = convert_UvS_to_MvS_as_Series
 
     convert_dict[
+        ("pd.Series", "modin_series", "Series")
+    ] = lambda obj: md.Series(obj)
+
+    convert_dict[
+        ("pd.DataFrame", "modin_series", "Series")
+    ] = lambda obj: md.Series(obj)
+
+    _extend_conversions(
+        "modin_series", "pd.DataFrame", convert_dict, mtype_universe=MTYPE_LIST_SERIES
+    )
+
+    convert_dict[
         ("modin_dataframe", "pd.DataFrame", "Series")
     ] = lambda obj: pd.DataFrame(obj)
 
@@ -321,21 +333,13 @@ if _check_soft_dependencies("modin", severity="none"):
     ] = convert_MvS_to_UvS_as_Series
 
     convert_dict[
-        ("pd.Series", "modin_series", "Series")
-    ] = lambda obj: md.Series(obj)
-
-    convert_dict[
         ("pd.Series", "modin_dataframe", "Series")
     ] = lambda obj: md.DataFrame(obj)
-
-    convert_dict[
-        ("pd.DataFrame", "modin_series", "Series")
-    ] = lambda obj: md.Series(obj)
 
     convert_dict[
         ("pd.DataFrame", "modin_dataframe", "Series")
     ] = lambda obj: md.DataFrame(obj)
 
     _extend_conversions(
-        "modin_series", "pd.DataFrame", convert_dict, mtype_universe=MTYPE_LIST_SERIES
+        "modin_dataframe", "pd.DataFrame", convert_dict, mtype_universe=MTYPE_LIST_SERIES
     )
