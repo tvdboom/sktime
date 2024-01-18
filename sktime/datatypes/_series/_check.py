@@ -359,3 +359,128 @@ if _check_soft_dependencies("dask", severity="none"):
         )
 
     check_dict[("dask_series", "Series")] = check_dask_series
+
+
+if _check_soft_dependencies("modin", severity="none"):
+    import modin.pandas as md
+
+    def check_modin_dataframe_series(obj, return_metadata=False, var_name="obj"):
+        metadata = dict()
+
+        if not isinstance(obj, md.DataFrame):
+            msg = f"{var_name} must be a modin.DataFrame, found {type(obj)}"
+            return ret(False, msg, None, return_metadata)
+
+        # we now know obj is a modin.DataFrame
+        index = obj.index
+        if _req("is_empty", return_metadata):
+            metadata["is_empty"] = len(index) < 1 or len(obj.columns) < 1
+        if _req("is_univariate", return_metadata):
+            metadata["is_univariate"] = len(obj.columns) < 2
+        if _req("n_features", return_metadata):
+            metadata["n_features"] = len(obj.columns)
+        if _req("feature_names", return_metadata):
+            metadata["feature_names"] = obj.columns.to_list()
+
+        # check that columns are unique
+        if not obj.columns.is_unique:
+            msg = f"{var_name} must have unique column indices, but found {obj.columns}"
+            return ret(False, msg, None, return_metadata)
+
+        # check whether the time index is of valid type
+        if not is_in_valid_index_types(index):
+            msg = (
+                f"{type(index)} is not supported for {var_name}, use "
+                f"one of {VALID_INDEX_TYPES} or integer index instead."
+            )
+            return ret(False, msg, None, return_metadata)
+
+        # check that no dtype is object
+        if "object" in obj.dtypes.values:
+            msg = f"{var_name} should not have column of 'object' dtype"
+            return ret(False, msg, None, return_metadata)
+
+        # Check time index is ordered in time
+        if not index.is_monotonic_increasing:
+            msg = (
+                f"The (time) index of {var_name} must be sorted monotonically increasing, "
+                f"but found: {index}"
+            )
+            return ret(False, msg, None, return_metadata)
+
+        if FREQ_SET_CHECK and isinstance(index, md.DatetimeIndex):
+            if index.freq is None:
+                msg = f"{var_name} has DatetimeIndex, but no freq attribute set."
+                return ret(False, msg, None, return_metadata)
+
+        # check whether index is equally spaced or if there are any nans
+        #   compute only if needed
+        if _req("is_equally_spaced", return_metadata):
+            metadata["is_equally_spaced"] = _index_equally_spaced(index)
+        if _req("has_nans", return_metadata):
+            metadata["has_nans"] = obj.isna().values.any()
+
+        return ret(True, None, metadata, return_metadata)
+
+
+    check_dict[("modin_dataframe", "Series")] = check_modin_dataframe_series
+
+
+    def check_modin_series_series(obj, return_metadata=False, var_name="obj"):
+        metadata = dict()
+
+        if not isinstance(obj, md.Series):
+            msg = f"{var_name} must be a modin.Series, found {type(obj)}"
+            return ret(False, msg, None, return_metadata)
+
+        # we now know obj is a modin.Series
+        index = obj.index
+        if _req("is_empty", return_metadata):
+            metadata["is_empty"] = len(index) < 1
+        if _req("is_univariate", return_metadata):
+            metadata["is_univariate"] = True
+        if _req("n_features", return_metadata):
+            metadata["n_features"] = 1
+        if _req("feature_names", return_metadata):
+            if not hasattr(obj, "name") or obj.name is None:
+                metadata["feature_names"] = [0]
+            else:
+                metadata["feature_names"] = [obj.name]
+
+        # check that dtype is not object
+        if "object" == obj.dtypes:
+            msg = f"{var_name} should not be of 'object' dtype"
+            return ret(False, msg, None, return_metadata)
+
+        # check whether the time index is of valid type
+        if not is_in_valid_index_types(index):
+            msg = (
+                f"{type(index)} is not supported for {var_name}, use "
+                f"one of {VALID_INDEX_TYPES} or integer index instead."
+            )
+            return ret(False, msg, None, return_metadata)
+
+        # Check time index is ordered in time
+        if not index.is_monotonic_increasing:
+            msg = (
+                f"The (time) index of {var_name} must be sorted monotonically increasing, "
+                f"but found: {index}"
+            )
+            return ret(False, msg, None, return_metadata)
+
+        if FREQ_SET_CHECK and isinstance(index, md.DatetimeIndex):
+            if index.freq is None:
+                msg = f"{var_name} has DatetimeIndex, but no freq attribute set."
+                return ret(False, msg, None, return_metadata)
+
+        # check whether index is equally spaced or if there are any nans
+        #   compute only if needed
+        if _req("is_equally_spaced", return_metadata):
+            metadata["is_equally_spaced"] = _index_equally_spaced(index)
+        if _req("has_nans", return_metadata):
+            metadata["has_nans"] = obj.isna().values.any()
+
+        return ret(True, None, metadata, return_metadata)
+
+
+    check_dict[("modin_series", "Series")] = check_modin_series_series

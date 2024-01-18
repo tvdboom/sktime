@@ -32,8 +32,23 @@ MTYPE_REGISTER_SERIES = [
         "Series",
         "xdas representation of a uni- or multivariate series",
     ),
+    (
+        "modin_series",
+        "Series",
+        "modin.Series representation of a univariate series",
+    ),
+    (
+        "modin_dataframe",
+        "Series",
+        "modin.DataFrame representation of a uni- or multivariate series",
+    ),
 ]
 
-MTYPE_SOFT_DEPS_SERIES = {"xr.DataArray": "xarray", "dask_series": "dask"}
+MTYPE_SOFT_DEPS_SERIES = {
+    "xr.DataArray": "xarray",
+    "dask_series": "dask",
+    "modin_series": "modin",
+    "modin_dataframe": "modin",
+}
 
 MTYPE_LIST_SERIES = [x[0] for x in MTYPE_REGISTER_SERIES]

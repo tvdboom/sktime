@@ -258,3 +258,84 @@ if _check_soft_dependencies("dask", severity="none"):
     _extend_conversions(
         "dask_series", "pd.DataFrame", convert_dict, mtype_universe=MTYPE_LIST_SERIES
     )
+
+
+if _check_soft_dependencies("modin", severity="none"):
+    import modin.pandas as md
+
+    def convert_UvS_modin_to_MvS_as_Series(obj: md.Series, store=None) -> pd.DataFrame:
+        if not isinstance(obj, md.Series):
+            raise TypeError("input must be a modin.Series")
+
+        obj = _coerce_df_dtypes(obj)
+
+        if isinstance(store, dict):
+            store["name"] = obj.name
+
+        res = pd.DataFrame(obj)
+
+        if (
+                isinstance(store, dict)
+                and "columns" in store.keys()
+                and len(store["columns"]) == 1
+        ):
+            res.columns = store["columns"]
+
+        return res
+
+    def convert_MvS_modin_to_UvS_as_Series(obj: md.DataFrame, store=None) -> pd.Series:
+        if not isinstance(obj, md.DataFrame):
+            raise TypeError("input is not a modin.DataFrame")
+
+        obj = _coerce_df_dtypes(obj)
+
+        if len(obj.columns) != 1:
+            raise ValueError("input must be univariate pd.DataFrame, with one column")
+
+        if isinstance(store, dict):
+            store["columns"] = obj.columns[[0]]
+
+        y = obj[obj.columns[0]]
+
+        if isinstance(store, dict) and "name" in store.keys():
+            y.name = store["name"]
+        else:
+            y.name = None
+
+        return y
+
+    convert_dict[
+        ("modin_series", "pd.Series", "Series")
+    ] = lambda obj: pd.Series(obj)
+
+    convert_dict[
+        ("modin_series", "pd.DataFrame", "Series")
+    ] = convert_UvS_to_MvS_as_Series
+
+    convert_dict[
+        ("modin_dataframe", "pd.DataFrame", "Series")
+    ] = lambda obj: pd.DataFrame(obj)
+
+    convert_dict[
+        ("modin_dataframe", "pd.Series", "Series")
+    ] = convert_MvS_to_UvS_as_Series
+
+    convert_dict[
+        ("pd.Series", "modin_series", "Series")
+    ] = lambda obj: md.Series(obj)
+
+    convert_dict[
+        ("pd.Series", "modin_dataframe", "Series")
+    ] = lambda obj: md.DataFrame(obj)
+
+    convert_dict[
+        ("pd.DataFrame", "modin_series", "Series")
+    ] = lambda obj: md.Series(obj)
+
+    convert_dict[
+        ("pd.DataFrame", "modin_dataframe", "Series")
+    ] = lambda obj: md.DataFrame(obj)
+
+    _extend_conversions(
+        "modin_series", "pd.DataFrame", convert_dict, mtype_universe=MTYPE_LIST_SERIES
+    )
